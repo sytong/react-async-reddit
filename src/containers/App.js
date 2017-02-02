@@ -91,7 +91,7 @@ class App extends Component {
             </a>
           }
           &nbsp;
-          {!this.state.isAutoRefreshing &&
+          {!this.state.isAutoRefreshing && !isFetching &&
             <a href="#"
                onClick={this.startAutoRefresh}>
                Auto Refresh
