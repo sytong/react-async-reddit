@@ -13,6 +13,14 @@ class App extends Component {
     dispatch: PropTypes.func.isRequired
   }
 
+  constructor() {
+    super()
+    this.state = {
+      isAutoRefreshing: false,
+      intervalID: null
+    }
+  }
+
   componentDidMount() {
     const { dispatch, selectedReddit } = this.props
     dispatch(fetchPostsIfNeeded(selectedReddit))
@@ -37,6 +45,30 @@ class App extends Component {
     dispatch(fetchPostsIfNeeded(selectedReddit))
   }
 
+  startAutoRefresh = e => {
+    e.preventDefault()
+
+    const { dispatch, selectedReddit } = this.props
+    let intervalID = setInterval(() => {
+      dispatch(invalidateReddit(selectedReddit))
+      dispatch(fetchPostsIfNeeded(selectedReddit))
+    }, 5000)
+    this.setState({
+      isAutoRefreshing: true,
+      intervalID
+    })
+  }
+
+  stopAutoRefresh = e => {
+    e.preventDefault()
+
+    clearInterval(this.state.intervalID)
+    this.setState({
+      isAutoRefreshing: false,
+      intervalID: null
+    })
+  }
+
   render() {
     const { selectedReddit, posts, isFetching, lastUpdated } = this.props
     const isEmpty = posts.length === 0
@@ -44,7 +76,7 @@ class App extends Component {
       <div>
         <Picker value={selectedReddit}
                 onChange={this.handleChange}
-                options={[ 'reactjs', 'frontend' ]} />
+                options={[ 'reactjs', 'frontend', 'funny' ]} />
         <p>
           {lastUpdated &&
             <span>
@@ -52,10 +84,23 @@ class App extends Component {
               {' '}
             </span>
           }
-          {!isFetching &&
+          {!this.state.isAutoRefreshing && !isFetching &&
             <a href="#"
                onClick={this.handleRefreshClick}>
               Refresh
+            </a>
+          }
+          &nbsp;
+          {!this.state.isAutoRefreshing &&
+            <a href="#"
+               onClick={this.startAutoRefresh}>
+               Auto Refresh
+            </a>
+          }
+          {this.state.isAutoRefreshing &&
+            <a href="#"
+               onClick={this.stopAutoRefresh}>
+               Stop Auto Refresh
             </a>
           }
         </p>
